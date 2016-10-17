@@ -53,7 +53,7 @@ SUCCESS_MESSAGE="Thank you! Your FileVault key has been regenerated."
 
 ######################## VALIDATION AND ERROR CHECKING ########################
 
-# Suppress errors for the duration of this script. (This prevents Casper from
+# Suppress errors for the duration of this script. (This prevents JAMF Pro from
 # marking a policy as "failed" if the words "fail" or "error" inadvertently
 # appear in the script output.)
 exec 2>/dev/null
