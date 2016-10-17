@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@lindegroup.com>
 #         Created:  2015-01-05
-#   Last Modified:  2016-09-13
-#         Version:  1.6
+#   Last Modified:  2016-10-17
+#         Version:  1.6.1
 #
 ###
 
@@ -60,11 +60,16 @@ exec 2>/dev/null
 
 BAIL=false
 
-# Make sure the custom logo has been received successfully
+# Make sure the custom logos have been received successfully
 if [[ ! -f "$LOGO_ICNS" ]]; then
-    echo "[ERROR] Custom icon not present: $LOGO_ICNS"
+    echo "[ERROR] Custom logo icon not present: $LOGO_ICNS"
     BAIL=true
 fi
+if [[ ! -f "$LOGO_PNG" ]]; then
+    echo "[ERROR] Custom logo PNG not present: $LOGO_PNG"
+    BAIL=true
+fi
+
 # Convert POSIX path of logo icon to Mac path for AppleScript
 LOGO_ICNS="$(osascript -e 'tell application "System Events" to return POSIX file "'"$LOGO_ICNS"'" as text')"
 
