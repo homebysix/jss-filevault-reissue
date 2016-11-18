@@ -80,6 +80,7 @@ __The reissue_filevault_recovery_key.sh script runs on each affected Mac.__
     - __Verify__ the Mac login password, with 5 chances to enter correct password.
 
 Here is the section of the script you'll want to customize:
+
 ![Script screenshot](images/script.png)
 
 
