@@ -193,7 +193,7 @@ if [[ $FDESETUP_RESULT -ne 0 ]]; then
     echo "[WARNING] fdesetup exited with return code: $FDESETUP_RESULT."
     echo "$FDESETUP_OUTPUT"
 elif [[ $ESCROW_STATUS -ne 0 ]]; then
-    echo "[WARNING] FileVault key was generated, but escrow did not occur."
+    echo "[WARNING] FileVault key was generated, but escrow did not occur. Please verify that the redirection profile is installed and the Mac is connected to the internet."
     echo "$FDESETUP_OUTPUT"
 else
     echo "Displaying \"success\" message..."
