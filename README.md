@@ -6,14 +6,17 @@ _Presented by Elliot Jordan, Senior Consultant, [Linde Group](http://www.lindegr
 
 ## Table of Contents
 
+<!-- MarkdownTOC autolink=true depth=4 bracket=round -->
+
 - [The Problem](#the-problem)
 - [The Solution](#the-solution)
     - [Step One: Configuration Profile](#step-one-configuration-profile)
     - [Step Two: Smart Group](#step-two-smart-group)
     - [Step Three: Script](#step-three-script)
-        - [reissue_filevault_recovery_key.sh Example Script](https://github.com/homebysix/misc/blob/master/2015-01-27%20MacBrained%20Reissuing%20FileVault%20Keys/reissue_filevault_recovery_key.sh)
     - [Step Four: Policy](#step-four-policy)
     - [Follow Through](#follow-through)
+
+<!-- /MarkdownTOC -->
 
 ---
 
