@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@lindegroup.com>
 #         Created:  2015-01-05
-#   Last Modified:  2016-10-17
-#         Version:  1.6.1
+#   Last Modified:  2016-12-05
+#         Version:  1.6.2
 #
 ###
 
@@ -191,6 +191,8 @@ grep -q "Escrowing recovery key..." <<< "$FDESETUP_OUTPUT"
 ESCROW_STATUS=$?
 if [[ $FDESETUP_RESULT -ne 0 ]]; then
     echo "[WARNING] fdesetup exited with return code: $FDESETUP_RESULT."
+    echo "See this page for a list of fdesetup exit codes and their meaning:"
+    echo "https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man8/fdesetup.8.html"
     echo "$FDESETUP_OUTPUT"
 elif [[ $ESCROW_STATUS -ne 0 ]]; then
     echo "[WARNING] FileVault key was generated, but escrow did not occur. Please verify that the redirection profile is installed and the Mac is connected to the internet."
