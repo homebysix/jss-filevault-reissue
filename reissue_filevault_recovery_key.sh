@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@lindegroup.com>
 #         Created:  2015-01-05
-#   Last Modified:  2016-12-05
-#         Version:  1.6.2
+#   Last Modified:  2017-01-04
+#         Version:  1.6.4
 #
 ###
 
@@ -132,7 +132,7 @@ if [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -le 9 ]]; then
     L_ID=$(pgrep -x -u "$USER_ID" loginwindow)
     L_METHOD="bsexec"
 elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -gt 9 ]]; then
-    L_ID=USER_ID
+    L_ID=$USER_ID
     L_METHOD="asuser"
 fi
 
@@ -158,12 +158,14 @@ until dscl /Search -authonly "$CURRENT_USER" "$USER_PASS" &>/dev/null; do
 done
 echo "Successfully prompted for Mac password."
 
-# If needed, unload FDERecoveryAgent and remember to reload later.
-FDERA=false
+# If needed, unload and kill FDERecoveryAgent.
 if launchctl list | grep -q "com.apple.security.FDERecoveryAgent"; then
-    FDERA=true
-    echo "Unloading FDERecoveryAgent..."
+    echo "Unloading FDERecoveryAgent LaunchDaemon..."
     launchctl unload /System/Library/LaunchDaemons/com.apple.security.FDERecoveryAgent.plist
+fi
+if pgrep -q "FDERecoveryAgent"; then
+    echo "Stopping FDERecoveryAgent process..."
+    killall "FDERecoveryAgent"
 fi
 
 # Translate XML reserved characters to XML friendly representations.
@@ -200,15 +202,6 @@ elif [[ $ESCROW_STATUS -ne 0 ]]; then
 else
     echo "Displaying \"success\" message..."
     launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$SUCCESS_MESSAGE" -button1 'OK' -defaultButton 1 -timeout 30 -startlaunchd &>/dev/null &
-fi
-
-# Reload FDERecoveryAgent, if it was unloaded earlier.
-if [[ "$FDERA" == "true" ]]; then
-    # Only if it wasn't automatically reloaded by `fdesetup`.
-    if ! launchctl list | grep -q "com.apple.security.FDERecoveryAgent"; then
-        echo "Loading FDERecoveryAgent..."
-        launchctl load /System/Library/LaunchDaemons/com.apple.security.FDERecoveryAgent.plist
-    fi
 fi
 
 exit $FDESETUP_RESULT
