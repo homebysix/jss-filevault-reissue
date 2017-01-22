@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@lindegroup.com>
 #         Created:  2015-01-05
-#   Last Modified:  2016-12-07
-#         Version:  1.6.3
+#   Last Modified:  2017-01-04
+#         Version:  1.6.4
 #
 ###
 
@@ -132,7 +132,7 @@ if [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -le 9 ]]; then
     L_ID=$(pgrep -x -u "$USER_ID" loginwindow)
     L_METHOD="bsexec"
 elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -gt 9 ]]; then
-    L_ID=USER_ID
+    L_ID=$USER_ID
     L_METHOD="asuser"
 fi
 
