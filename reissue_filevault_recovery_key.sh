@@ -43,6 +43,13 @@ Please contact the Help Desk at 555-1212 for help with your Mac password."
 # The body of the message that will be displayed after successful completion.
 SUCCESS_MESSAGE="Thank you! Your FileVault key has been escrowed."
 
+# The body of the message that will be displayed if a failure occurs.
+FAIL_MESSAGE="Sorry, an error occurred while escrowing your FileVault key. Please contact the Help Desk at 555-1212 for help."
+
+# Optional but recommended: The profile identifier of the FileVault Key
+# Redirection profile (e.g. ABCDEF12-3456-7890-ABCD-EF1234567890).
+PROFILE_IDENTIFIER=""
+
 
 ###############################################################################
 ######################### DO NOT EDIT BELOW THIS LINE #########################
@@ -56,16 +63,16 @@ SUCCESS_MESSAGE="Thank you! Your FileVault key has been escrowed."
 # appear in the script output.)
 exec 2>/dev/null
 
-BAIL=false
+BAILOUT=false
 
 # Make sure the custom logos have been received successfully
 if [[ ! -f "$LOGO_ICNS" ]]; then
     echo "[ERROR] Custom logo icon not present: $LOGO_ICNS"
-    BAIL=true
+    BAILOUT=true
 fi
 if [[ ! -f "$LOGO_PNG" ]]; then
     echo "[ERROR] Custom logo PNG not present: $LOGO_PNG"
-    BAIL=true
+    BAILOUT=true
 fi
 
 # Convert POSIX path of logo icon to Mac path for AppleScript
@@ -75,7 +82,7 @@ LOGO_ICNS="$(osascript -e 'tell application "System Events" to return POSIX file
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 if [[ ! -x "$jamfHelper" ]]; then
     echo "[ERROR] jamfHelper not found."
-    BAIL=true
+    BAILOUT=true
 fi
 
 # Most of the code below is based on the JAMF reissueKey.sh script:
@@ -87,7 +94,7 @@ OS_MINOR=$(sw_vers -productVersion | awk -F . '{print $2}')
 if [[ "$OS_MAJOR" -ne 10 || "$OS_MINOR" -lt 9 ]]; then
     echo "[ERROR] OS version not 10.9+ or OS version unrecognized."
     sw_vers -productVersion
-    BAIL=true
+    BAILOUT=true
 fi
 
 # Check to see if the encryption process is complete
@@ -95,15 +102,15 @@ FV_STATUS="$(fdesetup status)"
 if grep -q "Encryption in progress" <<< "$FV_STATUS"; then
     echo "[ERROR] The encryption process is still in progress."
     echo "$FV_STATUS"
-    BAIL=true
+    BAILOUT=true
 elif grep -q "FileVault is Off" <<< "$FV_STATUS"; then
     echo "[ERROR] Encryption is not active."
     echo "$FV_STATUS"
-    BAIL=true
+    BAILOUT=true
 elif ! grep -q "FileVault is On" <<< "$FV_STATUS"; then
     echo "[ERROR] Unable to determine encryption status."
     echo "$FV_STATUS"
-    BAIL=true
+    BAILOUT=true
 fi
 
 # Get the logged in user's name
@@ -114,11 +121,20 @@ FV_USERS="$(fdesetup list)"
 if ! egrep -q "^${CURRENT_USER}," <<< "$FV_USERS"; then
     echo "[ERROR] $CURRENT_USER is not on the list of FileVault enabled users:"
     echo "$FV_USERS"
-    BAIL=true
+    BAILOUT=true
+fi
+
+# If specified, the FileVault key redirection profile needs to be installed.
+if [[ "$PROFILE_IDENTIFIER" != "" ]]; then
+    profiles -Cv | grep -q "profileIdentifier: $PROFILE_IDENTIFIER"
+    if [[ $? -ne 0 ]]; then
+        echo "[ERROR] The FileVault Key Redirection profile is not yet installed."
+        BAILOUT=true
+    fi
 fi
 
 # If any error occurred above, bail out.
-if [[ "$BAIL" == "true" ]]; then
+if [[ "$BAILOUT" == "true" ]]; then
     exit 1
 fi
 
@@ -190,14 +206,19 @@ FDESETUP_RESULT=$?
 grep -q "Escrowing recovery key..." <<< "$FDESETUP_OUTPUT"
 ESCROW_STATUS=$?
 if [[ $FDESETUP_RESULT -ne 0 ]]; then
+    echo "$FDESETUP_OUTPUT"
     echo "[WARNING] fdesetup exited with return code: $FDESETUP_RESULT."
     echo "See this page for a list of fdesetup exit codes and their meaning:"
     echo "https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man8/fdesetup.8.html"
-    echo "$FDESETUP_OUTPUT"
+    echo "Displaying \"failure\" message..."
+    launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 elif [[ $ESCROW_STATUS -ne 0 ]]; then
-    echo "[WARNING] FileVault key was generated, but escrow did not occur. Please verify that the redirection profile is installed and the Mac is connected to the internet."
     echo "$FDESETUP_OUTPUT"
+    echo "[WARNING] FileVault key was generated, but escrow did not occur. Please verify that the redirection profile is installed and the Mac is connected to the internet."
+    echo "Displaying \"failure\" message..."
+    launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 else
+    echo "$FDESETUP_OUTPUT"
     echo "Displaying \"success\" message..."
     launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$SUCCESS_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 fi
