@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@lindegroup.com>
 #         Created:  2015-01-05
-#   Last Modified:  2017-01-04
-#         Version:  1.6.4
+#   Last Modified:  2017-02-21
+#         Version:  1.7
 #
 ###
 
@@ -20,20 +20,18 @@
 ################################## VARIABLES ##################################
 
 # Your company's logo, in PNG format. (For use in jamfHelper messages.)
-# Use standard UNIX path format:  /path/to/file.png
 LOGO_PNG="/Library/Application Support/PretendCo/logo@512px.png"
 
 # Your company's logo, in ICNS format. (For use in AppleScript messages.)
-# Use standard UNIX path format:  /path/to/file.icns
 LOGO_ICNS="/private/tmp/PretendCo.icns"
 
 # The title of the message that will be displayed to the user.
 # Not too long, or it'll get clipped.
-PROMPT_TITLE="FileVault key repair"
+PROMPT_TITLE="Encryption Key Escrow"
 
 # The body of the message that will be displayed before prompting the user for
 # their password. All message strings below can be multiple lines.
-PROMPT_MESSAGE="Your Mac's FileVault encryption key needs to be regenerated in order for PretendCo IT to be able to recover data from your hard drive in case of emergency.
+PROMPT_MESSAGE="Your Mac's FileVault encryption key needs to be escrowed by PretendCo IT.
 
 Click the Next button below, then enter your Mac's password when prompted."
 
@@ -43,7 +41,7 @@ FORGOT_PW_MESSAGE="You made five incorrect password attempts.
 Please contact the Help Desk at 555-1212 for help with your Mac password."
 
 # The body of the message that will be displayed after successful completion.
-SUCCESS_MESSAGE="Thank you! Your FileVault key has been regenerated."
+SUCCESS_MESSAGE="Thank you! Your FileVault key has been escrowed."
 
 
 ###############################################################################
