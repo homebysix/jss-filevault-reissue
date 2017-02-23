@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@lindegroup.com>
 #         Created:  2015-01-05
-#   Last Modified:  2017-02-21
-#         Version:  1.7
+#   Last Modified:  2017-02-22
+#         Version:  1.7.1
 #
 ###
 
@@ -64,6 +64,12 @@ PROFILE_IDENTIFIER=""
 exec 2>/dev/null
 
 BAILOUT=false
+
+# Make sure we have root privileges (for fdesetup).
+if [[ $EUID -ne 0 ]]; then
+    echo "[ERROR] This script must run as root."
+    BAILOUT=true
+fi
 
 # Make sure the custom logos have been received successfully
 if [[ ! -f "$LOGO_ICNS" ]]; then
