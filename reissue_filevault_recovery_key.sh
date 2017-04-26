@@ -9,7 +9,7 @@
 #                   new FileVault key and escrow with the JSS. The "redirect
 #                   FileVault keys to JSS" configuration profile must already
 #                   be deployed in order for this script to work correctly.
-#          Author:  Elliot Jordan <elliot@lindegroup.com>
+#          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
 #   Last Modified:  2017-02-22
 #         Version:  1.7.1
