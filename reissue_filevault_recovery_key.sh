@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2017-02-22
-#         Version:  1.7.1
+#   Last Modified:  2017-05-11
+#         Version:  1.7.2
 #
 ###
 
@@ -189,8 +189,11 @@ if pgrep -q "FDERecoveryAgent"; then
 fi
 
 # Translate XML reserved characters to XML friendly representations.
-# Thanks @AggroBoy! - https://gist.github.com/AggroBoy/1242257
-USER_PASS_XML=$(echo "$USER_PASS" | sed -e 's~&~\&amp;~g' -e 's~<~\&lt;~g' -e 's~>~\&gt;~g' -e 's~\"~\&quot;~g' -e "s~\'~\&apos;~g" )
+USER_PASS=${USER_PASS//&/&amp;}
+USER_PASS=${USER_PASS//</&lt;}
+USER_PASS=${USER_PASS//>/&gt;}
+USER_PASS=${USER_PASS//\"/&quot;}
+USER_PASS=${USER_PASS//\'/&apos;}
 
 echo "Issuing new recovery key..."
 FDESETUP_OUTPUT="$(fdesetup changerecovery -norecoverykey -verbose -personal -inputplist << EOF
@@ -201,7 +204,7 @@ FDESETUP_OUTPUT="$(fdesetup changerecovery -norecoverykey -verbose -personal -in
     <key>Username</key>
     <string>$CURRENT_USER</string>
     <key>Password</key>
-    <string>$USER_PASS_XML</string>
+    <string>$USER_PASS</string>
 </dict>
 </plist>
 EOF
