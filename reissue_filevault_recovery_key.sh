@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2017-05-11
-#         Version:  1.7.2
+#   Last Modified:  2017-07-29
+#         Version:  1.7.3
 #
 ###
 
@@ -68,6 +68,13 @@ BAILOUT=false
 # Make sure we have root privileges (for fdesetup).
 if [[ $EUID -ne 0 ]]; then
     echo "[ERROR] This script must run as root."
+    BAILOUT=true
+fi
+
+# Check for remote users.
+REMOTE_USERS=$(who | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | wc -l)
+if [[ $REMOTE_USERS -gt 0 ]]; then
+    echo "[ERROR] Remote users are logged in."
     BAILOUT=true
 fi
 
