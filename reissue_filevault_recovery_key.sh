@@ -217,6 +217,9 @@ FDESETUP_OUTPUT="$(fdesetup changerecovery -norecoverykey -verbose -personal -in
 EOF
 )"
 
+# Clear password variable.
+unset USER_PASS
+
 # Test success conditions.
 FDESETUP_RESULT=$?
 grep -q "Escrowing recovery key..." <<< "$FDESETUP_OUTPUT"
