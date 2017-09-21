@@ -202,6 +202,14 @@ USER_PASS=${USER_PASS//>/&gt;}
 USER_PASS=${USER_PASS//\"/&quot;}
 USER_PASS=${USER_PASS//\'/&apos;}
 
+# For 10.13's escrow process, store the last modification time of /var/db/FileVaultPRK.dat
+if [[ "$OS_MINOR" -ge 13 ]]; then
+    PRK_MOD=0
+    if [ -e /var/db/FileVaultPRK.dat ]; then
+        PRK_MOD=$(stat -f "%Sm" -t "%s" /var/db/FileVaultPRK.dat)
+    fi
+fi
+
 echo "Issuing new recovery key..."
 FDESETUP_OUTPUT="$(fdesetup changerecovery -norecoverykey -verbose -personal -inputplist << EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -222,8 +230,22 @@ unset USER_PASS
 
 # Test success conditions.
 FDESETUP_RESULT=$?
-grep -q "Escrowing recovery key..." <<< "$FDESETUP_OUTPUT"
-ESCROW_STATUS=$?
+# Differentiate <=10.12 and >=10.13 success conditions
+if [[ "$OS_MINOR" -ge 13 ]]; then
+    # Check new modification time of of FileVaultPRK.dat
+    ESCROW_STATUS=1
+    if [ -e /var/db/FileVaultPRK.dat ]; then
+        NEW_PRK_MOD=$(stat -f "%Sm" -t "%s" /var/db/FileVaultPRK.dat)
+        if [[ $NEW_PRK_MOD -gt $PRK_MOD ]]; then
+            ESCROW_STATUS=0
+        fi
+    fi
+else
+    # Check output of fdesetup command for indication of an escrow attempt
+    grep -q "Escrowing recovery key..." <<< "$FDESETUP_OUTPUT"
+    ESCROW_STATUS=$?
+fi
+
 if [[ $FDESETUP_RESULT -ne 0 ]]; then
     echo "$FDESETUP_OUTPUT"
     echo "[WARNING] fdesetup exited with return code: $FDESETUP_RESULT."
