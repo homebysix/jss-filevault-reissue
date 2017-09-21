@@ -204,8 +204,10 @@ USER_PASS=${USER_PASS//\'/&apos;}
 
 # For 10.13's escrow process, store the last modification time of /var/db/FileVaultPRK.dat
 if [[ "$OS_MINOR" -ge 13 ]]; then
+    echo "Checking for /var/db/FileVaultPRK.dat on macOS 10.13+..."
     PRK_MOD=0
     if [ -e /var/db/FileVaultPRK.dat ]; then
+        echo "Found existing personal recovery key."
         PRK_MOD=$(stat -f "%Sm" -t "%s" /var/db/FileVaultPRK.dat)
     fi
 fi
@@ -238,6 +240,9 @@ if [[ "$OS_MINOR" -ge 13 ]]; then
         NEW_PRK_MOD=$(stat -f "%Sm" -t "%s" /var/db/FileVaultPRK.dat)
         if [[ $NEW_PRK_MOD -gt $PRK_MOD ]]; then
             ESCROW_STATUS=0
+            echo "Recovery key updated locally and available for collection via MDM."
+        else
+            echo "The recovery key does not appear to have been updated locally."
         fi
     fi
 else
