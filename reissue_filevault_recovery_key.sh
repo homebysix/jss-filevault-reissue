@@ -127,7 +127,7 @@ elif ! grep -q "FileVault is On" <<< "$FV_STATUS"; then
 fi
 
 # Get the logged in user's name
-CURRENT_USER="$(stat -f%Su /dev/console)"
+CURRENT_USER=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 
 # This first user check sees if the logged in account is already authorized with FileVault 2
 FV_USERS="$(fdesetup list)"
