@@ -72,7 +72,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Check for remote users.
-REMOTE_USERS=$(who | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | wc -l)
+REMOTE_USERS=$(/usr/bin/who | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | wc -l)
 if [[ $REMOTE_USERS -gt 0 ]]; then
     echo "[ERROR] Remote users are logged in."
     BAILOUT=true
@@ -102,8 +102,8 @@ fi
 # https://github.com/JAMFSupport/FileVault2_Scripts/blob/master/reissueKey.sh
 
 # Check the OS version.
-OS_MAJOR=$(sw_vers -productVersion | awk -F . '{print $1}')
-OS_MINOR=$(sw_vers -productVersion | awk -F . '{print $2}')
+OS_MAJOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $1}')
+OS_MINOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $2}')
 if [[ "$OS_MAJOR" -ne 10 || "$OS_MINOR" -lt 9 ]]; then
     echo "[ERROR] OS version not 10.9+ or OS version unrecognized."
     sw_vers -productVersion
@@ -113,7 +113,7 @@ elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
 fi
 
 # Check to see if the encryption process is complete
-FV_STATUS="$(fdesetup status)"
+FV_STATUS="$(/usr/bin/fdesetup status)"
 if grep -q "Encryption in progress" <<< "$FV_STATUS"; then
     echo "[ERROR] The encryption process is still in progress."
     echo "$FV_STATUS"
@@ -129,10 +129,10 @@ elif ! grep -q "FileVault is On" <<< "$FV_STATUS"; then
 fi
 
 # Get the logged in user's name
-CURRENT_USER=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+CURRENT_USER=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 
 # This first user check sees if the logged in account is already authorized with FileVault 2
-FV_USERS="$(fdesetup list)"
+FV_USERS="$(/usr/bin/fdesetup list)"
 if ! egrep -q "^${CURRENT_USER}," <<< "$FV_USERS"; then
     echo "[ERROR] $CURRENT_USER is not on the list of FileVault enabled users:"
     echo "$FV_USERS"
@@ -141,7 +141,7 @@ fi
 
 # If specified, the FileVault key redirection profile needs to be installed.
 if [[ "$PROFILE_IDENTIFIER" != "" ]]; then
-    profiles -Cv | grep -q "profileIdentifier: $PROFILE_IDENTIFIER"
+    /usr/bin/profiles -Cv | grep -q "profileIdentifier: $PROFILE_IDENTIFIER"
     if [[ $? -ne 0 ]]; then
         echo "[ERROR] The FileVault Key Redirection profile is not yet installed."
         BAILOUT=true
@@ -156,9 +156,9 @@ fi
 ################################ MAIN PROCESS #################################
 
 # Get information necessary to display messages in the current user's context.
-USER_ID=$(id -u "$CURRENT_USER")
+USER_ID=$(/usr/bin/id -u "$CURRENT_USER")
 if [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -le 9 ]]; then
-    L_ID=$(pgrep -x -u "$USER_ID" loginwindow)
+    L_ID=$(/usr/bin/pgrep -x -u "$USER_ID" loginwindow)
     L_METHOD="bsexec"
 elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -gt 9 ]]; then
     L_ID=$USER_ID
@@ -167,30 +167,30 @@ fi
 
 # Display a branded prompt explaining the password prompt.
 echo "Alerting user $CURRENT_USER about incoming password prompt..."
-launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$PROMPT_MESSAGE" -button1 "Next" -defaultButton 1 -startlaunchd &>/dev/null
+/bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$PROMPT_MESSAGE" -button1 "Next" -defaultButton 1 -startlaunchd &>/dev/null
 
 # Get the logged in user's password via a prompt.
 echo "Prompting $CURRENT_USER for their Mac password..."
-USER_PASS="$(launchctl "$L_METHOD" "$L_ID" /usr/bin/osascript -e 'display dialog "Please enter the password you use to log in to your Mac:" default answer "" with title "'"${PROMPT_TITLE//\"/\\\"}"'" giving up after 86400 with text buttons {"OK"} default button 1 with hidden answer with icon file "'"${LOGO_ICNS//\"/\\\"}"'"' -e 'return text returned of result')"
+USER_PASS="$(/bin/launchctl "$L_METHOD" "$L_ID" /usr/bin/osascript -e 'display dialog "Please enter the password you use to log in to your Mac:" default answer "" with title "'"${PROMPT_TITLE//\"/\\\"}"'" giving up after 86400 with text buttons {"OK"} default button 1 with hidden answer with icon file "'"${LOGO_ICNS//\"/\\\"}"'"' -e 'return text returned of result')"
 
 # Thanks to James Barclay (@futureimperfect) for this password validation loop.
 TRY=1
-until dscl /Search -authonly "$CURRENT_USER" "$USER_PASS" &>/dev/null; do
+until /usr/bin/dscl /Search -authonly "$CURRENT_USER" "$USER_PASS" &>/dev/null; do
     (( TRY++ ))
     echo "Prompting $CURRENT_USER for their Mac password (attempt $TRY)..."
-    USER_PASS="$(launchctl "$L_METHOD" "$L_ID" /usr/bin/osascript -e 'display dialog "Sorry, that password was incorrect. Please try again:" default answer "" with title "'"${PROMPT_TITLE//\"/\\\"}"'" giving up after 86400 with text buttons {"OK"} default button 1 with hidden answer with icon file "'"${LOGO_ICNS//\"/\\\"}"'"' -e 'return text returned of result')"
+    USER_PASS="$(/bin/launchctl "$L_METHOD" "$L_ID" /usr/bin/osascript -e 'display dialog "Sorry, that password was incorrect. Please try again:" default answer "" with title "'"${PROMPT_TITLE//\"/\\\"}"'" giving up after 86400 with text buttons {"OK"} default button 1 with hidden answer with icon file "'"${LOGO_ICNS//\"/\\\"}"'"' -e 'return text returned of result')"
     if (( TRY >= 5 )); then
         echo "[ERROR] Password prompt unsuccessful after 5 attempts. Displaying \"forgot password\" message..."
-        launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FORGOT_PW_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
+        /bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FORGOT_PW_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
         exit 1
     fi
 done
 echo "Successfully prompted for Mac password."
 
 # If needed, unload and kill FDERecoveryAgent.
-if launchctl list | grep -q "com.apple.security.FDERecoveryAgent"; then
+if /bin/launchctl list | grep -q "com.apple.security.FDERecoveryAgent"; then
     echo "Unloading FDERecoveryAgent LaunchDaemon..."
-    launchctl unload /System/Library/LaunchDaemons/com.apple.security.FDERecoveryAgent.plist
+    /bin/launchctl unload /System/Library/LaunchDaemons/com.apple.security.FDERecoveryAgent.plist
 fi
 if pgrep -q "FDERecoveryAgent"; then
     echo "Stopping FDERecoveryAgent process..."
@@ -208,14 +208,14 @@ USER_PASS=${USER_PASS//\'/&apos;}
 if [[ "$OS_MINOR" -ge 13 ]]; then
     echo "Checking for /var/db/FileVaultPRK.dat on macOS 10.13+..."
     PRK_MOD=0
-    if [ -e /var/db/FileVaultPRK.dat ]; then
+    if [ -e "/var/db/FileVaultPRK.dat" ]; then
         echo "Found existing personal recovery key."
-        PRK_MOD=$(stat -f "%Sm" -t "%s" /var/db/FileVaultPRK.dat)
+        PRK_MOD=$(/usr/bin/stat -f "%Sm" -t "%s" "/var/db/FileVaultPRK.dat")
     fi
 fi
 
 echo "Issuing new recovery key..."
-FDESETUP_OUTPUT="$(fdesetup changerecovery -norecoverykey -verbose -personal -inputplist << EOF
+FDESETUP_OUTPUT="$(/usr/bin/fdesetup changerecovery -norecoverykey -verbose -personal -inputplist << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -238,13 +238,13 @@ FDESETUP_RESULT=$?
 if [[ "$OS_MINOR" -ge 13 ]]; then
     # Check new modification time of of FileVaultPRK.dat
     ESCROW_STATUS=1
-    if [ -e /var/db/FileVaultPRK.dat ]; then
-        NEW_PRK_MOD=$(stat -f "%Sm" -t "%s" /var/db/FileVaultPRK.dat)
+    if [ -e "/var/db/FileVaultPRK.dat" ]; then
+        NEW_PRK_MOD=$(/usr/bin/stat -f "%Sm" -t "%s" "/var/db/FileVaultPRK.dat")
         if [[ $NEW_PRK_MOD -gt $PRK_MOD ]]; then
             ESCROW_STATUS=0
             echo "Recovery key updated locally and available for collection via MDM."
         else
-            echo "The recovery key does not appear to have been updated locally."
+            echo "[WARNING] The recovery key does not appear to have been updated locally."
         fi
     fi
 else
@@ -254,21 +254,21 @@ else
 fi
 
 if [[ $FDESETUP_RESULT -ne 0 ]]; then
-    echo "$FDESETUP_OUTPUT"
+    [[ -n "$FDESETUP_OUTPUT" ]] && echo "$FDESETUP_OUTPUT"
     echo "[WARNING] fdesetup exited with return code: $FDESETUP_RESULT."
     echo "See this page for a list of fdesetup exit codes and their meaning:"
     echo "https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man8/fdesetup.8.html"
     echo "Displaying \"failure\" message..."
-    launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
+    /bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 elif [[ $ESCROW_STATUS -ne 0 ]]; then
-    echo "$FDESETUP_OUTPUT"
-    echo "[WARNING] FileVault key was generated, but escrow did not occur. Please verify that the redirection profile is installed and the Mac is connected to the internet."
+    [[ -n "$FDESETUP_OUTPUT" ]] && echo "$FDESETUP_OUTPUT"
+    echo "[WARNING] FileVault key was generated, but escrow cannot be confirmed. Please verify that the redirection profile is installed and the Mac is connected to the internet."
     echo "Displaying \"failure\" message..."
-    launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
+    /bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 else
-    echo "$FDESETUP_OUTPUT"
+    [[ -n "$FDESETUP_OUTPUT" ]] && echo "$FDESETUP_OUTPUT"
     echo "Displaying \"success\" message..."
-    launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$SUCCESS_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
+    /bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$SUCCESS_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 fi
 
 exit $FDESETUP_RESULT
