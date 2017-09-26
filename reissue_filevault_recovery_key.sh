@@ -244,7 +244,7 @@ if [[ "$OS_MINOR" -ge 13 ]]; then
             ESCROW_STATUS=0
             echo "Recovery key updated locally and available for collection via MDM."
         else
-            echo "The recovery key does not appear to have been updated locally."
+            echo "[WARNING] The recovery key does not appear to have been updated locally."
         fi
     fi
 else
@@ -262,7 +262,7 @@ if [[ $FDESETUP_RESULT -ne 0 ]]; then
     launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 elif [[ $ESCROW_STATUS -ne 0 ]]; then
     echo "$FDESETUP_OUTPUT"
-    echo "[WARNING] FileVault key was generated, but escrow did not occur. Please verify that the redirection profile is installed and the Mac is connected to the internet."
+    echo "[WARNING] FileVault key was generated, but escrow cannot be confirmed. Please verify that the redirection profile is installed and the Mac is connected to the internet."
     echo "Displaying \"failure\" message..."
     launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 else
