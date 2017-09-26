@@ -254,19 +254,19 @@ else
 fi
 
 if [[ $FDESETUP_RESULT -ne 0 ]]; then
-    echo "$FDESETUP_OUTPUT"
+    [[ -n "$FDESETUP_OUTPUT" ]] && echo "$FDESETUP_OUTPUT"
     echo "[WARNING] fdesetup exited with return code: $FDESETUP_RESULT."
     echo "See this page for a list of fdesetup exit codes and their meaning:"
     echo "https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man8/fdesetup.8.html"
     echo "Displaying \"failure\" message..."
     /bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 elif [[ $ESCROW_STATUS -ne 0 ]]; then
-    echo "$FDESETUP_OUTPUT"
+    [[ -n "$FDESETUP_OUTPUT" ]] && echo "$FDESETUP_OUTPUT"
     echo "[WARNING] FileVault key was generated, but escrow cannot be confirmed. Please verify that the redirection profile is installed and the Mac is connected to the internet."
     echo "Displaying \"failure\" message..."
     /bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 else
-    echo "$FDESETUP_OUTPUT"
+    [[ -n "$FDESETUP_OUTPUT" ]] && echo "$FDESETUP_OUTPUT"
     echo "Displaying \"success\" message..."
     /bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO_PNG" -title "$PROMPT_TITLE" -description "$SUCCESS_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 fi
