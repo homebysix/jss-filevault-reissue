@@ -108,6 +108,8 @@ if [[ "$OS_MAJOR" -ne 10 || "$OS_MINOR" -lt 9 ]]; then
     echo "[ERROR] OS version not 10.9+ or OS version unrecognized."
     sw_vers -productVersion
     BAILOUT=true
+elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
+    echo "[WARNING] This script is still in BETA in High Sierra, because the fdesetup binary has changed significantly. Please use with caution."
 fi
 
 # Check to see if the encryption process is complete
