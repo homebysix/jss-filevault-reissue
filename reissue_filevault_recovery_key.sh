@@ -98,8 +98,7 @@ fi
 OS_MAJOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $1}')
 OS_MINOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $2}')
 if [[ "$OS_MAJOR" -ne 10 || "$OS_MINOR" -lt 9 ]]; then
-    REASON="OS version not 10.9+ or OS version unrecognized."
-    sw_vers -productVersion
+    REASON="This script requires macOS 10.9 or higher. This Mac has $(sw_vers -productVersion)."
     BAILOUT=true
 elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
     echo "[WARNING] This script is still in BETA in High Sierra, because the fdesetup binary has changed significantly. Please use with caution."
@@ -108,16 +107,13 @@ fi
 # Check to see if the encryption process is complete
 FV_STATUS="$(/usr/bin/fdesetup status)"
 if grep -q "Encryption in progress" <<< "$FV_STATUS"; then
-    REASON="The encryption process is still in progress."
-    echo "$FV_STATUS"
+    REASON="FileVault encryption is in progress. Please run the script again when it finishes."
     BAILOUT=true
 elif grep -q "FileVault is Off" <<< "$FV_STATUS"; then
     REASON="Encryption is not active."
-    echo "$FV_STATUS"
     BAILOUT=true
 elif ! grep -q "FileVault is On" <<< "$FV_STATUS"; then
     REASON="Unable to determine encryption status."
-    echo "$FV_STATUS"
     BAILOUT=true
 fi
 
