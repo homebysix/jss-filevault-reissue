@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2017-09-27
-#         Version:  1.8.1
+#   Last Modified:  2017-11-15
+#         Version:  1.8.2
 #
 ###
 
@@ -124,12 +124,17 @@ fi
 # Get the logged in user's name
 CURRENT_USER=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 
-# This first user check sees if the logged in account is already authorized with FileVault 2
-FV_USERS="$(/usr/bin/fdesetup list)"
-if ! egrep -q "^${CURRENT_USER}," <<< "$FV_USERS"; then
-    REASON="$CURRENT_USER is not on the list of FileVault enabled users:"
-    echo "$FV_USERS"
+# Make sure there's an actual user logged in
+if [[ -z $CURRENT_USER || "$CURRENT_USER" == "root" ]]; then
+    REASON="No user is currently logged in."
     BAILOUT=true
+else
+    # Make sure logged in account is already authorized with FileVault 2
+    FV_USERS="$(/usr/bin/fdesetup list)"
+    if ! egrep -q "^${CURRENT_USER}," <<< "$FV_USERS"; then
+        REASON="$CURRENT_USER is not on the list of FileVault enabled users: $FV_USERS"
+        BAILOUT=true
+    fi
 fi
 
 # If specified, the FileVault key redirection profile needs to be installed.
