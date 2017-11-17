@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2017-11-15
-#         Version:  1.8.2
+#   Last Modified:  2017-11-16
+#         Version:  1.9
 #
 ###
 
@@ -43,9 +43,10 @@ SUCCESS_MESSAGE="Thank you! Your FileVault key has been escrowed."
 # The body of the message that will be displayed if a failure occurs.
 FAIL_MESSAGE="Sorry, an error occurred while escrowing your FileVault key. Please contact the Help Desk at 555-1212 for help."
 
-# Optional but recommended: The profile identifier of the FileVault Key
-# Redirection profile (e.g. ABCDEF12-3456-7890-ABCD-EF1234567890).
-PROFILE_IDENTIFIER=""
+# Optional but recommended: The profile identifiers of the FileVault Key
+# Redirection profiles (e.g. ABCDEF12-3456-7890-ABCD-EF1234567890).
+PROFILE_IDENTIFIER_10_12="" # 10.12 and earlier
+PROFILE_IDENTIFIER_10_13="" # 10.13 and later
 
 
 ###############################################################################
@@ -134,11 +135,19 @@ else
 fi
 
 # If specified, the FileVault key redirection profile needs to be installed.
-if [[ "$PROFILE_IDENTIFIER" != "" ]]; then
-    /usr/bin/profiles -Cv | grep -q "profileIdentifier: $PROFILE_IDENTIFIER"
-    if [[ $? -ne 0 ]]; then
-        REASON="The FileVault Key Redirection profile is not yet installed."
-        BAILOUT=true
+if [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -le 12 ]]; then
+    if [[ "$PROFILE_IDENTIFIER_10_12" != "" ]]; then
+        if ! /usr/bin/profiles -Cv | grep -q "profileIdentifier: $PROFILE_IDENTIFIER_10_12"; then
+            REASON="The FileVault Key Redirection profile is not yet installed."
+            BAILOUT=true
+        fi
+    fi
+elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -gt 12 ]]; then
+    if [[ "$PROFILE_IDENTIFIER_10_13" != "" ]]; then
+        if ! /usr/bin/profiles -Cv | grep -q "profileIdentifier: $PROFILE_IDENTIFIER_10_13"; then
+            REASON="The FileVault Key Redirection profile is not yet installed."
+            BAILOUT=true
+        fi
     fi
 fi
 
