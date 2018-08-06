@@ -235,11 +235,12 @@ FDESETUP_OUTPUT="$(/usr/bin/fdesetup changerecovery -norecoverykey -verbose -per
 EOF
 )"
 
+# Test success conditions.
+FDESETUP_RESULT=$?
+
 # Clear password variable.
 unset USER_PASS
 
-# Test success conditions.
-FDESETUP_RESULT=$?
 # Differentiate <=10.12 and >=10.13 success conditions
 if [[ "$OS_MINOR" -ge 13 ]]; then
     # Check new modification time of of FileVaultPRK.dat
