@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2017-11-16
-#         Version:  1.9
+#   Last Modified:  2018-08-06
+#         Version:  1.9.1
 #
 ###
 
@@ -167,7 +167,7 @@ fi
 # If any error occurred in the validation section, bail out.
 if [[ "$BAILOUT" == "true" ]]; then
     echo "[ERROR]: $REASON"
-    launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE: $REASON." -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
+    launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE: $REASON" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
     exit 1
 fi
 
