@@ -249,7 +249,7 @@ if [[ "$OS_MINOR" -ge 13 ]]; then
         NEW_PRK_MOD=$(/usr/bin/stat -f "%Sm" -t "%s" "/var/db/FileVaultPRK.dat")
         if [[ $NEW_PRK_MOD -gt $PRK_MOD ]]; then
             ESCROW_STATUS=0
-            echo "Recovery key updated locally and available for collection via MDM."
+            echo "Recovery key updated locally and available for collection via MDM. (This usually requires two 'jamf recon' runs to show as valid.)"
         else
             echo "[WARNING] The recovery key does not appear to have been updated locally."
         fi
