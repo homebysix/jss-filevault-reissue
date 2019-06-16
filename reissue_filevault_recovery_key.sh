@@ -120,7 +120,7 @@ elif ! grep -q "FileVault is On" <<< "$FV_STATUS"; then
 fi
 
 # Get the logged in user's name
-CURRENT_USER=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+CURRENT_USER=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username);')
 
 # Make sure there's an actual user logged in
 if [[ -z $CURRENT_USER || "$CURRENT_USER" == "root" ]]; then
