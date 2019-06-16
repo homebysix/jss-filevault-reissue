@@ -135,4 +135,3 @@ __Thank you!__
 ---
 
 [See the original presentation slides](https://github.com/homebysix/misc/blob/master/2015-01-27%20MacBrained%20Reissuing%20FileVault%20Keys/MacBrained%20FileVault%20Reissue%20Slides.pdf).
-[Watch the original presentation on Ustream](http://www.ustream.tv/recorded/58111140).
