@@ -101,8 +101,9 @@ OS_MINOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $2}')
 if [[ "$OS_MAJOR" -ne 10 || "$OS_MINOR" -lt 9 ]]; then
     REASON="This script requires macOS 10.9 or higher. This Mac has $(sw_vers -productVersion)."
     BAILOUT=true
-elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
-    echo "[WARNING] This script is still in BETA in High Sierra, because the fdesetup binary has changed significantly. Please use with caution."
+elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 15 ]]; then
+    echo "[ERROR] This script is unsupported on macOS Catalina, because user authentication information can no longer be passed to the fdesetup tool."
+    BAILOUT=true
 fi
 
 # Check to see if the encryption process is complete
