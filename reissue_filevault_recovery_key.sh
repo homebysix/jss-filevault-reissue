@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2018-08-06
-#         Version:  1.9.1
+#   Last Modified:  2019-06-16
+#         Version:  1.9.2
 #
 ###
 
