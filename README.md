@@ -112,15 +112,21 @@ __Don’t forget to monitor policy logs and test FileVault recovery to verify su
 - Update your internal documentation. 
 
 
-### High Sierra Compatibility
+### Compatibility
 
-This script has not been tested comprehensively with macOS High Sierra, so please proceed with caution if deploying to clients with High Sierra installed. Specifically, we know about the following issues:
+#### High Sierra (10.13) and Mojave (10.14)
 
-- Entering an incorrect password during the key rotation process can result in invalidation of the existing FileVault key.
+This script appears to work with macOS High Sierra and Mojave, but there are a few known issues:
+
+- On specific versions of High Sierra, entering an incorrect password during the key rotation process can result in invalidation of the existing FileVault key.
     - Since the existing FileVault key is not valid in the first place (presumably) this isn't the end of the world. But it means that if the key was stored separately, e.g. in a spreadsheet somewhere, it will no longer work.
     - We attempt to mitigate this by validating the provided password with `dscl` prior to using it for rotation of the FileVault key. However, there is no guarantee that your local account password and your FileVault password are the same.
-- Previous versions of macOS generated log output that confirmed the successful escrow of the newly generated FileVault key. High Sierra does not. Instead, it writes to a local file containing the new key, which MDM is meant to retrieve. We attempt to determine escrow success by detecting a change in that file, but it's not a guarantee of success.
-- If you find additional issues with High Sierra, I'd appreciate you [opening an issue](https://github.com/homebysix/jss-filevault-reissue/issues) on this repo.
+- Previous versions of macOS generated log output that confirmed the successful escrow of the newly generated FileVault key. High Sierra and Mojave do not. Instead, a local file containing the new key is written, which MDM is meant to retrieve. We attempt to determine escrow success by detecting a change in that file, but it's not a guarantee of success.
+- If you find additional issues with High Sierra or Mojave, I'd appreciate you [opening an issue](https://github.com/homebysix/jss-filevault-reissue/issues) on this repo.
+
+#### Catalina (10.15)
+
+__This script will not work on macOS Catalina__ due to the inability to pass user authentication information to the `fdesetup` tool.
 
 
 __Thank you!__
