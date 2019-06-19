@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2019-06-16
-#         Version:  1.9.2
+#   Last Modified:  2019-06-19
+#         Version:  1.9.3
 #
 ###
 
@@ -102,8 +102,7 @@ if [[ "$OS_MAJOR" -ne 10 || "$OS_MINOR" -lt 9 ]]; then
     REASON="This script requires macOS 10.9 or higher. This Mac has $(sw_vers -productVersion)."
     BAILOUT=true
 elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 15 ]]; then
-    echo "[ERROR] This script is unsupported on macOS Catalina, because user authentication information can no longer be passed to the fdesetup tool."
-    BAILOUT=true
+    echo "[WARNING] This script is not yet supported on macOS Catalina. Use at your own risk."
 fi
 
 # Check to see if the encryption process is complete
