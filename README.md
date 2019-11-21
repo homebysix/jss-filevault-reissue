@@ -126,7 +126,7 @@ This script appears to work with macOS High Sierra and Mojave, but there are a 
 
 #### Catalina (10.15)
 
-__This script will not work on macOS Catalina__ due to the inability to pass user authentication information to the `fdesetup` tool.
+This script should work on macOS Catalina, but please [open an issue](https://github.com/homebysix/jss-filevault-reissue/issues) if you notice any Catalina-specific bugs.
 
 
 __Thank you!__
