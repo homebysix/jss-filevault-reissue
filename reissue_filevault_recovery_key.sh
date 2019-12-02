@@ -11,16 +11,17 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2019-06-19
-#         Version:  1.9.3
+#   Last Modified:  2019-12-02
+#         Version:  1.9.4
 #
 ###
 
 
 ################################## VARIABLES ##################################
 
-# Company logo. (Tested with PNG, JPG, GIF, PDF, and AI formats.)
-LOGO="/Library/Application Support/PretendCo/logo@512px.png"
+# (Optional) Path to a logo that will be used in messaging. Recommend 512px,
+# PNG format. If no logo is provided, the FileVault icon will be used.
+LOGO=""
 
 # The title of the message that will be displayed to the user.
 # Not too long, or it'll get clipped.
@@ -75,15 +76,6 @@ if [[ $REMOTE_USERS -gt 0 ]]; then
     REASON="Remote users are logged in."
     BAILOUT=true
 fi
-
-# Make sure the custom logo file is present.
-if [[ ! -f "$LOGO" ]]; then
-    REASON="Custom logo not present: $LOGO"
-    BAILOUT=true
-fi
-
-# Convert POSIX path of logo icon to Mac path for AppleScript
-LOGO_POSIX="$(/usr/bin/osascript -e 'tell application "System Events" to return POSIX file "'"$LOGO"'" as text')"
 
 # Bail out if jamfHelper doesn't exist.
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
@@ -153,6 +145,16 @@ fi
 
 
 ################################ MAIN PROCESS #################################
+
+# Validate logo file. If no logo is provided or if the file cannot be found at
+# specified path, default to the FileVault icon.
+if [[ -z "$LOGO" ]] || [[ ! -f "$LOGO" ]]; then
+    /bin/echo "No logo provided, or no logo exists at specified path. Using FileVault icon."
+    LOGO="/System/Library/PreferencePanes/Security.prefPane/Contents/Resources/FileVault.icns"
+fi
+
+# Convert POSIX path of logo icon to Mac path for AppleScript.
+LOGO_POSIX="$(/usr/bin/osascript -e 'tell application "System Events" to return POSIX file "'"$LOGO"'" as text')"
 
 # Get information necessary to display messages in the current user's context.
 USER_ID=$(/usr/bin/id -u "$CURRENT_USER")
