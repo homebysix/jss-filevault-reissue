@@ -111,7 +111,7 @@ elif ! grep -q "FileVault is On" <<< "$FV_STATUS"; then
 fi
 
 # Get the logged in user's name
-CURRENT_USER=$(/usr/bin/stat -f%Su "/dev/console")
+CURRENT_USER=$(/bin/echo "show State:/Users/ConsoleUser" | /usr/sbin/scutil | /usr/bin/awk '/Name :/&&!/loginwindow/{print $3}')
 
 # Make sure there's an actual user logged in
 if [[ -z $CURRENT_USER || "$CURRENT_USER" == "root" ]]; then
