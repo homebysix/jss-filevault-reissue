@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2020-07-06
-#         Version:  1.9.5
+#   Last Modified:  2020-07-29
+#         Version:  1.9.6
 #
 ###
 
@@ -120,7 +120,7 @@ if [[ -z $CURRENT_USER || "$CURRENT_USER" == "root" ]]; then
 else
     # Make sure logged in account is already authorized with FileVault 2
     FV_USERS="$(/usr/bin/fdesetup list)"
-    if ! egrep -q "^${CURRENT_USER}," <<< "$FV_USERS"; then
+    if ! /usr/bin/grep -E -q "^${CURRENT_USER}," <<< "$FV_USERS"; then
         REASON="$CURRENT_USER is not on the list of FileVault enabled users: $FV_USERS"
         BAILOUT=true
     fi
