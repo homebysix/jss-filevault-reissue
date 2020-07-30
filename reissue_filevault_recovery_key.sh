@@ -71,7 +71,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Check for remote users.
-REMOTE_USERS=$(/usr/bin/who | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | wc -l)
+REMOTE_USERS=$(/usr/bin/who | /usr/bin/grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | wc -l)
 if [[ $REMOTE_USERS -gt 0 ]]; then
     REASON="Remote users are logged in."
     BAILOUT=true
@@ -99,13 +99,13 @@ fi
 
 # Check to see if the encryption process is complete
 FV_STATUS="$(/usr/bin/fdesetup status)"
-if grep -q "Encryption in progress" <<< "$FV_STATUS"; then
+if /usr/bin/grep -q "Encryption in progress" <<< "$FV_STATUS"; then
     REASON="FileVault encryption is in progress. Please run the script again when it finishes."
     BAILOUT=true
-elif grep -q "FileVault is Off" <<< "$FV_STATUS"; then
+elif /usr/bin/grep -q "FileVault is Off" <<< "$FV_STATUS"; then
     REASON="Encryption is not active."
     BAILOUT=true
-elif ! grep -q "FileVault is On" <<< "$FV_STATUS"; then
+elif ! /usr/bin/grep -q "FileVault is On" <<< "$FV_STATUS"; then
     REASON="Unable to determine encryption status."
     BAILOUT=true
 fi
@@ -129,14 +129,14 @@ fi
 # If specified, the FileVault key redirection profile needs to be installed.
 if [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -le 12 ]]; then
     if [[ "$PROFILE_IDENTIFIER_10_12" != "" ]]; then
-        if ! /usr/bin/profiles -Cv | grep -q "profileIdentifier: $PROFILE_IDENTIFIER_10_12"; then
+        if ! /usr/bin/profiles -Cv | /usr/bin/grep -q "profileIdentifier: $PROFILE_IDENTIFIER_10_12"; then
             REASON="The FileVault Key Redirection profile is not yet installed."
             BAILOUT=true
         fi
     fi
 elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -gt 12 ]]; then
     if [[ "$PROFILE_IDENTIFIER_10_13" != "" ]]; then
-        if ! /usr/bin/profiles -Cv | grep -q "profileIdentifier: $PROFILE_IDENTIFIER_10_13"; then
+        if ! /usr/bin/profiles -Cv | /usr/bin/grep -q "profileIdentifier: $PROFILE_IDENTIFIER_10_13"; then
             REASON="The FileVault Key Redirection profile is not yet installed."
             BAILOUT=true
         fi
@@ -196,7 +196,7 @@ done
 echo "Successfully prompted for Mac password."
 
 # If needed, unload and kill FDERecoveryAgent.
-if /bin/launchctl list | grep -q "com.apple.security.FDERecoveryAgent"; then
+if /bin/launchctl list | /usr/bin/grep -q "com.apple.security.FDERecoveryAgent"; then
     echo "Unloading FDERecoveryAgent LaunchDaemon..."
     /bin/launchctl unload /System/Library/LaunchDaemons/com.apple.security.FDERecoveryAgent.plist
 fi
@@ -258,7 +258,7 @@ if [[ "$OS_MINOR" -ge 13 ]]; then
     fi
 else
     # Check output of fdesetup command for indication of an escrow attempt
-    grep -q "Escrowing recovery key..." <<< "$FDESETUP_OUTPUT"
+    /usr/bin/grep -q "Escrowing recovery key..." <<< "$FDESETUP_OUTPUT"
     ESCROW_STATUS=$?
 fi
 
