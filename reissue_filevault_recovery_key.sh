@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2020-07-29
-#         Version:  1.9.6
+#   Last Modified:  2020-11-02
+#         Version:  1.9.7
 #
 ###
 
@@ -90,11 +90,11 @@ fi
 # Check the OS version.
 OS_MAJOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $1}')
 OS_MINOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $2}')
-if [[ "$OS_MAJOR" -ne 10 || "$OS_MINOR" -lt 9 ]]; then
-    REASON="This script requires macOS 10.9 or higher. This Mac has $(sw_vers -productVersion)."
+if [[ "$OS_MAJOR" -eq 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -eq 16 ]]; then
+    echo "[WARNING] This script has not been tested on macOS Big Sur. Use at your own risk."
+elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -lt 9 ]]; then
+    REASON="This script requires macOS 10.9 or higher. This Mac has $(/usr/bin/sw_vers -productVersion)."
     BAILOUT=true
-elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 15 ]]; then
-    echo "[WARNING] This script is not yet supported on macOS Catalina. Use at your own risk."
 fi
 
 # Check to see if the encryption process is complete
