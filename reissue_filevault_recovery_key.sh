@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2020-12-04
-#         Version:  1.9.8
+#   Last Modified:  2020-12-16
+#         Version:  1.9.9
 #
 ###
 
@@ -213,7 +213,7 @@ USER_PASS=${USER_PASS//\"/&quot;}
 USER_PASS=${USER_PASS//\'/&apos;}
 
 # For 10.13's escrow process, store the last modification time of /var/db/FileVaultPRK.dat
-if [[ "$OS_MINOR" -ge 13 ]]; then
+if [[ "$OS_MAJOR" -eq 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
     echo "Checking for /var/db/FileVaultPRK.dat on macOS 10.13+..."
     PRK_MOD=0
     if [ -e "/var/db/FileVaultPRK.dat" ]; then
@@ -244,7 +244,7 @@ FDESETUP_RESULT=$?
 unset USER_PASS
 
 # Differentiate <=10.12 and >=10.13 success conditions
-if [[ "$OS_MINOR" -ge 13 ]]; then
+if [[ "$OS_MAJOR" -eq 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
     # Check new modification time of of FileVaultPRK.dat
     ESCROW_STATUS=1
     if [ -e "/var/db/FileVaultPRK.dat" ]; then
