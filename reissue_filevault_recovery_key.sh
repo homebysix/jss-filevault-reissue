@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2020-12-16
-#         Version:  1.9.9
+#   Last Modified:  2020-12-18
+#         Version:  1.10.0
 #
 ###
 
@@ -114,7 +114,7 @@ fi
 CURRENT_USER=$(/bin/echo "show State:/Users/ConsoleUser" | /usr/sbin/scutil | /usr/bin/awk '/Name :/&&!/loginwindow/{print $3}')
 
 # Make sure there's an actual user logged in
-if [[ -z $CURRENT_USER || "$CURRENT_USER" == "root" ]]; then
+if [[ -z $CURRENT_USER || "$CURRENT_USER" == "loginwindow" || "$CURRENT_USER" == "root" ]]; then
     REASON="No user is currently logged in."
     BAILOUT=true
 else
@@ -157,11 +157,12 @@ fi
 LOGO_POSIX="$(/usr/bin/osascript -e 'tell application "System Events" to return POSIX file "'"$LOGO"'" as text')"
 
 # Get information necessary to display messages in the current user's context.
+# Using both `launchctl` and `sudo -u` per this example: https://scriptingosx.com/2020/08/running-a-command-as-another-user/
 USER_ID=$(/usr/bin/id -u "$CURRENT_USER")
 if [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -le 9 ]]; then
     L_ID=$(/usr/bin/pgrep -x -u "$USER_ID" loginwindow)
     L_METHOD="bsexec"
-elif [[ "$OS_MAJOR" -eq 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -gt 9 ]]; then
+else
     L_ID=$USER_ID
     L_METHOD="asuser"
 fi
@@ -169,27 +170,27 @@ fi
 # If any error occurred in the validation section, bail out.
 if [[ "$BAILOUT" == "true" ]]; then
     echo "[ERROR]: $REASON"
-    launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE: $REASON" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
+    launchctl "$L_METHOD" "$L_ID" sudo -u "$CURRENT_USER" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE: $REASON" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
     exit 1
 fi
 
 # Display a branded prompt explaining the password prompt.
 echo "Alerting user $CURRENT_USER about incoming password prompt..."
-/bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$PROMPT_MESSAGE" -button1 "Next" -defaultButton 1 -startlaunchd &>/dev/null
+/bin/launchctl "$L_METHOD" "$L_ID" sudo -u "$CURRENT_USER" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$PROMPT_MESSAGE" -button1 "Next" -defaultButton 1 -startlaunchd &>/dev/null
 
 # Get the logged in user's password via a prompt.
 echo "Prompting $CURRENT_USER for their Mac password..."
-USER_PASS="$(/bin/launchctl "$L_METHOD" "$L_ID" /usr/bin/osascript -e 'display dialog "Please enter the password you use to log in to your Mac:" default answer "" with title "'"${PROMPT_TITLE//\"/\\\"}"'" giving up after 86400 with text buttons {"OK"} default button 1 with hidden answer with icon file "'"${LOGO_POSIX//\"/\\\"}"'"' -e 'return text returned of result')"
+USER_PASS="$(/bin/launchctl "$L_METHOD" "$L_ID" sudo -u "$CURRENT_USER" /usr/bin/osascript -e 'display dialog "Please enter the password you use to log in to your Mac:" default answer "" with title "'"${PROMPT_TITLE//\"/\\\"}"'" giving up after 86400 with text buttons {"OK"} default button 1 with hidden answer with icon file "'"${LOGO_POSIX//\"/\\\"}"'"' -e 'return text returned of result')"
 
 # Thanks to James Barclay (@futureimperfect) for this password validation loop.
 TRY=1
 until /usr/bin/dscl /Search -authonly "$CURRENT_USER" "$USER_PASS" &>/dev/null; do
     (( TRY++ ))
     echo "Prompting $CURRENT_USER for their Mac password (attempt $TRY)..."
-    USER_PASS="$(/bin/launchctl "$L_METHOD" "$L_ID" /usr/bin/osascript -e 'display dialog "Sorry, that password was incorrect. Please try again:" default answer "" with title "'"${PROMPT_TITLE//\"/\\\"}"'" giving up after 86400 with text buttons {"OK"} default button 1 with hidden answer with icon file "'"${LOGO_POSIX//\"/\\\"}"'"' -e 'return text returned of result')"
+    USER_PASS="$(/bin/launchctl "$L_METHOD" "$L_ID" sudo -u "$CURRENT_USER" /usr/bin/osascript -e 'display dialog "Sorry, that password was incorrect. Please try again:" default answer "" with title "'"${PROMPT_TITLE//\"/\\\"}"'" giving up after 86400 with text buttons {"OK"} default button 1 with hidden answer with icon file "'"${LOGO_POSIX//\"/\\\"}"'"' -e 'return text returned of result')"
     if (( TRY >= 5 )); then
         echo "[ERROR] Password prompt unsuccessful after 5 attempts. Displaying \"forgot password\" message..."
-        /bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$FORGOT_PW_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
+        /bin/launchctl "$L_METHOD" "$L_ID" sudo -u "$CURRENT_USER" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$FORGOT_PW_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
         exit 1
     fi
 done
@@ -268,16 +269,16 @@ if [[ $FDESETUP_RESULT -ne 0 ]]; then
     echo "See this page for a list of fdesetup exit codes and their meaning:"
     echo "https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man8/fdesetup.8.html"
     echo "Displaying \"failure\" message..."
-    /bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE: fdesetup exited with code $FDESETUP_RESULT. Output: $FDESETUP_OUTPUT" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
+    /bin/launchctl "$L_METHOD" "$L_ID" sudo -u "$CURRENT_USER" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE: fdesetup exited with code $FDESETUP_RESULT. Output: $FDESETUP_OUTPUT" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 elif [[ $ESCROW_STATUS -ne 0 ]]; then
     [[ -n "$FDESETUP_OUTPUT" ]] && echo "$FDESETUP_OUTPUT"
     echo "[WARNING] FileVault key was generated, but escrow cannot be confirmed. Please verify that the redirection profile is installed and the Mac is connected to the internet."
     echo "Displaying \"failure\" message..."
-    /bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE: New key generated, but escrow did not occur." -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
+    /bin/launchctl "$L_METHOD" "$L_ID" sudo -u "$CURRENT_USER" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$FAIL_MESSAGE: New key generated, but escrow did not occur." -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 else
     [[ -n "$FDESETUP_OUTPUT" ]] && echo "$FDESETUP_OUTPUT"
     echo "Displaying \"success\" message..."
-    /bin/launchctl "$L_METHOD" "$L_ID" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$SUCCESS_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
+    /bin/launchctl "$L_METHOD" "$L_ID" sudo -u "$CURRENT_USER" "$jamfHelper" -windowType "utility" -icon "$LOGO" -title "$PROMPT_TITLE" -description "$SUCCESS_MESSAGE" -button1 'OK' -defaultButton 1 -startlaunchd &>/dev/null &
 fi
 
 exit $FDESETUP_RESULT
