@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2020-12-18
-#         Version:  1.10.0
+#   Last Modified:  2020-12-22
+#         Version:  1.11.0
 #
 ###
 
@@ -149,8 +149,22 @@ fi
 # Validate logo file. If no logo is provided or if the file cannot be found at
 # specified path, default to the FileVault icon.
 if [[ -z "$LOGO" ]] || [[ ! -f "$LOGO" ]]; then
-    /bin/echo "No logo provided, or no logo exists at specified path. Using FileVault icon."
-    LOGO="/System/Library/PreferencePanes/Security.prefPane/Contents/Resources/FileVault.icns"
+    if [[ -f "/System/Library/PreferencePanes/Security.prefPane/Contents/Resources/FileVault.icns" ]]; then
+        /bin/echo "No logo provided, or no logo exists at specified path. Using FileVault icon."
+        LOGO="/System/Library/PreferencePanes/Security.prefPane/Contents/Resources/FileVault.icns"
+    elif [[ -f "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/FileVaultIcon.icns" ]]; then
+        /bin/echo "No logo provided, or no logo exists at specified path. Using FileVault icon."
+        LOGO="/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/FileVaultIcon.icns"
+    elif [[ -f "/System/Library/PreferencePanes/Security.prefPane/Contents/XPCServices/com.apple.preference.security.remoteservice.xpc/Contents/Resources/FileVault.icns" ]]; then
+        /bin/echo "No logo provided, or no logo exists at specified path. Using FileVault icon."
+        LOGO="/System/Library/PreferencePanes/Security.prefPane/Contents/XPCServices/com.apple.preference.security.remoteservice.xpc/Contents/Resources/FileVault.icns"
+    elif [[ -f "/System/Library/PreferencePanes/Security.prefPane/Contents/Resources/SystemPreferences_Security.tiff" ]]; then
+        /bin/echo "No logo provided, or no logo exists at specified path. Using FileVault icon."
+        LOGO="/System/Library/PreferencePanes/Security.prefPane/Contents/Resources/SystemPreferences_Security.tiff"
+    else
+        REASON="No suitable logo could be found."
+        BAILOUT=true
+    fi
 fi
 
 # Convert POSIX path of logo icon to Mac path for AppleScript.
