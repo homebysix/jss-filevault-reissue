@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2020-12-22
-#         Version:  1.11.0
+#   Last Modified:  2021-10-23
+#         Version:  1.12.0
 #
 ###
 
@@ -90,8 +90,8 @@ fi
 # Check the OS version.
 OS_MAJOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $1}')
 OS_MINOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $2}')
-if [[ "$OS_MAJOR" -eq 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -eq 16 ]]; then
-    echo "[WARNING] This script has not been tested on macOS Big Sur. Use at your own risk."
+if [[ "$OS_MAJOR" -ge 12 ]]; then
+    echo "[WARNING] This script has not been tested on this version of macOS. Use at your own risk."
 elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -lt 9 ]]; then
     REASON="This script requires macOS 10.9 or higher. This Mac has $(/usr/bin/sw_vers -productVersion)."
     BAILOUT=true
@@ -228,7 +228,7 @@ USER_PASS=${USER_PASS//\"/&quot;}
 USER_PASS=${USER_PASS//\'/&apos;}
 
 # For 10.13's escrow process, store the last modification time of /var/db/FileVaultPRK.dat
-if [[ "$OS_MAJOR" -eq 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
+if [[ "$OS_MAJOR" -ge 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
     echo "Checking for /var/db/FileVaultPRK.dat on macOS 10.13+..."
     PRK_MOD=0
     if [ -e "/var/db/FileVaultPRK.dat" ]; then
@@ -259,7 +259,7 @@ FDESETUP_RESULT=$?
 unset USER_PASS
 
 # Differentiate <=10.12 and >=10.13 success conditions
-if [[ "$OS_MAJOR" -eq 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
+if [[ "$OS_MAJOR" -ge 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
     # Check new modification time of of FileVaultPRK.dat
     ESCROW_STATUS=1
     if [ -e "/var/db/FileVaultPRK.dat" ]; then
