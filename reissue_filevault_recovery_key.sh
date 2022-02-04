@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2021-10-23
-#         Version:  1.12.0
+#   Last Modified:  2022-02-04
+#         Version:  1.12.1
 #
 ###
 
@@ -168,7 +168,7 @@ if [[ -z "$LOGO" ]] || [[ ! -f "$LOGO" ]]; then
 fi
 
 # Convert POSIX path of logo icon to Mac path for AppleScript.
-LOGO_POSIX="$(/usr/bin/osascript -e 'tell application "System Events" to return POSIX file "'"$LOGO"'" as text')"
+LOGO_POSIX="$(/usr/bin/osascript -e 'return POSIX file "'"$LOGO"'" as text')"
 
 # Get information necessary to display messages in the current user's context.
 # Using both `launchctl` and `sudo -u` per this example: https://scriptingosx.com/2020/08/running-a-command-as-another-user/
