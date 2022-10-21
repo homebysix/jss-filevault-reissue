@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2022-02-04
-#         Version:  1.12.1
+#   Last Modified:  2022-10-21
+#         Version:  1.12.2
 #
 ###
 
@@ -90,7 +90,7 @@ fi
 # Check the OS version.
 OS_MAJOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $1}')
 OS_MINOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $2}')
-if [[ "$OS_MAJOR" -ge 12 ]]; then
+if [[ "$OS_MAJOR" -ge 13 ]]; then
     echo "[WARNING] This script has not been tested on this version of macOS. Use at your own risk."
 elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -lt 9 ]]; then
     REASON="This script requires macOS 10.9 or higher. This Mac has $(/usr/bin/sw_vers -productVersion)."
@@ -111,7 +111,9 @@ elif ! /usr/bin/grep -q "FileVault is On" <<< "$FV_STATUS"; then
 fi
 
 # Get the logged in user's name
-CURRENT_USER=$(/bin/echo "show State:/Users/ConsoleUser" | /usr/sbin/scutil | /usr/bin/awk '/Name :/&&!/loginwindow/{print $3}')
+# Supports aliases created by Jamf Connect: https://github.com/homebysix/jss-filevault-reissue/issues/48
+CURRENT_USER_ALIAS=$(/bin/echo "show State:/Users/ConsoleUser" | /usr/sbin/scutil | /usr/bin/awk '/Name :/&&!/loginwindow/{print $3}')
+CURRENT_USER=$(id -un "$CURRENT_USER_ALIAS")
 
 # Make sure there's an actual user logged in
 if [[ -z $CURRENT_USER || "$CURRENT_USER" == "loginwindow" || "$CURRENT_USER" == "root" ]]; then
