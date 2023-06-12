@@ -85,7 +85,7 @@ if [[ ! -x "$jamfHelper" ]]; then
 fi
 
 # Most of the code below is based on the JAMF reissueKey.sh script:
-# https://github.com/JAMFSupport/FileVault2_Scripts/blob/master/reissueKey.sh
+# https://github.com/jamf/FileVault2_Scripts/blob/master/reissueKey.sh
 
 # Check the OS version.
 OS_MAJOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $1}')
