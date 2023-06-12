@@ -1,10 +1,17 @@
-# Reissuing FileVault keys with the Casper Suite
+# Reissuing FileVault keys with the Casper Suite <!-- omit in toc -->
 
 _Presented by Elliot Jordan, Senior Consultant, [Linde Group](http://www.lindegroup.com)_<br />_MacBrained - January 27, 2015 - San Francisco, CA_
 
+## Deprecation Notice <!-- omit in toc -->
+
+**[Escrow Buddy](https://github.com/macadmins/escrow-buddy) is a tool for reissuing and escrowing FileVault keys is available which does NOT require prompting users for their passwords.** As such, I don't plan to make any further updates to the workflow below. Please consider switching to Escrow Buddy. Read more below:
+
+- Netflix Tech Blog: [Escrow Buddy: An open-source tool from Netflix for remediation of missing FileVault keys in MDM](https://netflixtechblog.com/escrow-buddy-an-open-source-tool-from-netflix-for-remediation-of-missing-filevault-keys-in-mdm-815aef5107cd)
+- Elliot Jordan: [Escrowing new FileVault keys to MDM without password prompts](https://www.elliotjordan.com/posts/filevault-reissue/)
+
 ---
 
-## Table of Contents
+## Table of Contents <!-- omit in toc -->
 
 <!-- MarkdownTOC autolink=true depth=4 bracket=round -->
 
@@ -15,6 +22,9 @@ _Presented by Elliot Jordan, Senior Consultant, [Linde Group](http://www.lindegr
     - [Step Three: Script](#step-three-script)
     - [Step Four: Policy](#step-four-policy)
     - [Follow Through](#follow-through)
+    - [Compatibility](#compatibility)
+        - [High Sierra (10.13) and Mojave (10.14)](#high-sierra-1013-and-mojave-1014)
+        - [Catalina (10.15)](#catalina-1015)
 
 <!-- /MarkdownTOC -->
 
@@ -62,11 +72,11 @@ __A configuration profile called “Redirect FileVault keys to JSS” does what 
 
 __A smart group named “FileVault encryption key is invalid or unknown” selects the affected Macs.__
 
-| And/Or |                Criteria               |       Operator       |              Value              |
+| And/Or |               Criteria                |       Operator       |              Value              |
 | :----: | :-----------------------------------: | :------------------: | :-----------------------------: |
 |        | FileVault 2 Individual Key Validation |        is not        |              Valid              |
-|  and   |             Last Check-in             | less than x days ago |                30               |
-|  and   |      FileVault 2 Detailed Status*     |          is          | FileVault 2 Encryption Complete |
+|  and   |             Last Check-in             | less than x days ago |               30                |
+|  and   |     FileVault 2 Detailed Status*      |          is          | FileVault 2 Encryption Complete |
 
 <span style="font-size: 0.8em;">*From Rich Trouton’s FileVault status extension attribute: http://goo.gl/zB04LT</span>
 
@@ -106,10 +116,10 @@ __A policy called “Reissue invalid or missing FileVault recovery key” runs t
 
 __Don’t forget to monitor policy logs and test FileVault recovery to verify success.__
 
-- Monitor logs and flush one-off errors.  (Unable to connect to distribution point, no user logged in, etc.)
+- Monitor logs and flush one-off errors. (Unable to connect to distribution point, no user logged in, etc.)
 - Identify and resolve remaining problems manually.
 - Test a few newly-generated FileVault keys to ensure they are working as expected.
-- Update your internal documentation. 
+- Update your internal documentation.
 
 
 ### Compatibility
