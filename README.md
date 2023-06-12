@@ -15,6 +15,7 @@ _Presented by Elliot Jordan, Senior Consultant, [Linde Group](http://www.lindegr
 
 <!-- MarkdownTOC autolink=true depth=4 bracket=round -->
 
+- [Table of Contents](#table-of-contents)
 - [The Problem](#the-problem)
 - [The Solution](#the-solution)
     - [Step One: Configuration Profile](#step-one-configuration-profile)

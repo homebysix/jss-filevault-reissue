@@ -11,8 +11,8 @@
 #                   be deployed in order for this script to work correctly.
 #          Author:  Elliot Jordan <elliot@elliotjordan.com>
 #         Created:  2015-01-05
-#   Last Modified:  2020-12-18
-#         Version:  1.10.0
+#   Last Modified:  2022-10-21
+#         Version:  1.12.2
 #
 ###
 
@@ -90,8 +90,8 @@ fi
 # Check the OS version.
 OS_MAJOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $1}')
 OS_MINOR=$(/usr/bin/sw_vers -productVersion | awk -F . '{print $2}')
-if [[ "$OS_MAJOR" -eq 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -eq 16 ]]; then
-    echo "[WARNING] This script has not been tested on macOS Big Sur. Use at your own risk."
+if [[ "$OS_MAJOR" -ge 13 ]]; then
+    echo "[WARNING] This script has not been tested on this version of macOS. Use at your own risk."
 elif [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -lt 9 ]]; then
     REASON="This script requires macOS 10.9 or higher. This Mac has $(/usr/bin/sw_vers -productVersion)."
     BAILOUT=true
@@ -111,7 +111,9 @@ elif ! /usr/bin/grep -q "FileVault is On" <<< "$FV_STATUS"; then
 fi
 
 # Get the logged in user's name
-CURRENT_USER=$(/bin/echo "show State:/Users/ConsoleUser" | /usr/sbin/scutil | /usr/bin/awk '/Name :/&&!/loginwindow/{print $3}')
+# Supports aliases created by Jamf Connect: https://github.com/homebysix/jss-filevault-reissue/issues/48
+CURRENT_USER_ALIAS=$(/bin/echo "show State:/Users/ConsoleUser" | /usr/sbin/scutil | /usr/bin/awk '/Name :/&&!/loginwindow/{print $3}')
+CURRENT_USER=$(id -un "$CURRENT_USER_ALIAS")
 
 # Make sure there's an actual user logged in
 if [[ -z $CURRENT_USER || "$CURRENT_USER" == "loginwindow" || "$CURRENT_USER" == "root" ]]; then
@@ -149,12 +151,26 @@ fi
 # Validate logo file. If no logo is provided or if the file cannot be found at
 # specified path, default to the FileVault icon.
 if [[ -z "$LOGO" ]] || [[ ! -f "$LOGO" ]]; then
-    /bin/echo "No logo provided, or no logo exists at specified path. Using FileVault icon."
-    LOGO="/System/Library/PreferencePanes/Security.prefPane/Contents/Resources/FileVault.icns"
+    if [[ -f "/System/Library/PreferencePanes/Security.prefPane/Contents/Resources/FileVault.icns" ]]; then
+        /bin/echo "No logo provided, or no logo exists at specified path. Using FileVault icon."
+        LOGO="/System/Library/PreferencePanes/Security.prefPane/Contents/Resources/FileVault.icns"
+    elif [[ -f "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/FileVaultIcon.icns" ]]; then
+        /bin/echo "No logo provided, or no logo exists at specified path. Using FileVault icon."
+        LOGO="/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/FileVaultIcon.icns"
+    elif [[ -f "/System/Library/PreferencePanes/Security.prefPane/Contents/XPCServices/com.apple.preference.security.remoteservice.xpc/Contents/Resources/FileVault.icns" ]]; then
+        /bin/echo "No logo provided, or no logo exists at specified path. Using FileVault icon."
+        LOGO="/System/Library/PreferencePanes/Security.prefPane/Contents/XPCServices/com.apple.preference.security.remoteservice.xpc/Contents/Resources/FileVault.icns"
+    elif [[ -f "/System/Library/PreferencePanes/Security.prefPane/Contents/Resources/SystemPreferences_Security.tiff" ]]; then
+        /bin/echo "No logo provided, or no logo exists at specified path. Using FileVault icon."
+        LOGO="/System/Library/PreferencePanes/Security.prefPane/Contents/Resources/SystemPreferences_Security.tiff"
+    else
+        REASON="No suitable logo could be found."
+        BAILOUT=true
+    fi
 fi
 
 # Convert POSIX path of logo icon to Mac path for AppleScript.
-LOGO_POSIX="$(/usr/bin/osascript -e 'tell application "System Events" to return POSIX file "'"$LOGO"'" as text')"
+LOGO_POSIX="$(/usr/bin/osascript -e 'return POSIX file "'"$LOGO"'" as text')"
 
 # Get information necessary to display messages in the current user's context.
 # Using both `launchctl` and `sudo -u` per this example: https://scriptingosx.com/2020/08/running-a-command-as-another-user/
@@ -214,7 +230,7 @@ USER_PASS=${USER_PASS//\"/&quot;}
 USER_PASS=${USER_PASS//\'/&apos;}
 
 # For 10.13's escrow process, store the last modification time of /var/db/FileVaultPRK.dat
-if [[ "$OS_MAJOR" -eq 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
+if [[ "$OS_MAJOR" -ge 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
     echo "Checking for /var/db/FileVaultPRK.dat on macOS 10.13+..."
     PRK_MOD=0
     if [ -e "/var/db/FileVaultPRK.dat" ]; then
@@ -245,7 +261,7 @@ FDESETUP_RESULT=$?
 unset USER_PASS
 
 # Differentiate <=10.12 and >=10.13 success conditions
-if [[ "$OS_MAJOR" -eq 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
+if [[ "$OS_MAJOR" -ge 11 ]] || [[ "$OS_MAJOR" -eq 10 && "$OS_MINOR" -ge 13 ]]; then
     # Check new modification time of of FileVaultPRK.dat
     ESCROW_STATUS=1
     if [ -e "/var/db/FileVaultPRK.dat" ]; then
