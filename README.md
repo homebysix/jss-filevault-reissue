@@ -2,12 +2,11 @@
 
 _Presented by Elliot Jordan, Senior Consultant, [Linde Group](http://www.lindegroup.com)_<br />_MacBrained - January 27, 2015 - San Francisco, CA_
 
-## Deprecation Notice <!-- omit in toc -->
-
-**[Escrow Buddy](https://github.com/macadmins/escrow-buddy) is a tool for reissuing and escrowing FileVault keys is available which does NOT require prompting users for their passwords.** As such, I don't plan to make any further updates to the workflow below. Please consider switching to Escrow Buddy. Read more below:
-
-- Netflix Tech Blog: [Escrow Buddy: An open-source tool from Netflix for remediation of missing FileVault keys in MDM](https://netflixtechblog.com/escrow-buddy-an-open-source-tool-from-netflix-for-remediation-of-missing-filevault-keys-in-mdm-815aef5107cd)
-- Elliot Jordan: [Escrowing new FileVault keys to MDM without password prompts](https://www.elliotjordan.com/posts/filevault-reissue/)
+> [!WARNING]
+> **DEPRECATION NOTICE**: **[Escrow Buddy](https://github.com/macadmins/escrow-buddy) is a better tool for reissuing and escrowing FileVault keys which does NOT require prompting users for their passwords.** As such, I don't plan to make any further updates to the workflow below. Please strongly consider switching to Escrow Buddy. Read more below:
+>
+> - Netflix Tech Blog: [Escrow Buddy: An open-source tool from Netflix for remediation of missing FileVault keys in MDM](https://netflixtechblog.com/escrow-buddy-an-open-source-tool-from-netflix-for-remediation-of-missing-filevault-keys-in-mdm-815aef5107cd)
+> - Elliot Jordan: [Escrowing new FileVault keys to MDM without password prompts](https://www.elliotjordan.com/posts/filevault-reissue/)
 
 ---
 
@@ -15,7 +14,6 @@ _Presented by Elliot Jordan, Senior Consultant, [Linde Group](http://www.lindegr
 
 <!-- MarkdownTOC autolink=true depth=4 bracket=round -->
 
-- [Table of Contents](#table-of-contents)
 - [The Problem](#the-problem)
 - [The Solution](#the-solution)
     - [Step One: Configuration Profile](#step-one-configuration-profile)
@@ -23,9 +21,6 @@ _Presented by Elliot Jordan, Senior Consultant, [Linde Group](http://www.lindegr
     - [Step Three: Script](#step-three-script)
     - [Step Four: Policy](#step-four-policy)
     - [Follow Through](#follow-through)
-    - [Compatibility](#compatibility)
-        - [High Sierra (10.13) and Mojave (10.14)](#high-sierra-1013-and-mojave-1014)
-        - [Catalina (10.15)](#catalina-1015)
 
 <!-- /MarkdownTOC -->
 
@@ -121,23 +116,6 @@ __Don’t forget to monitor policy logs and test FileVault recovery to verify su
 - Identify and resolve remaining problems manually.
 - Test a few newly-generated FileVault keys to ensure they are working as expected.
 - Update your internal documentation.
-
-
-### Compatibility
-
-#### High Sierra (10.13) and Mojave (10.14)
-
-This script appears to work with macOS High Sierra and Mojave, but there are a few known issues:
-
-- On specific versions of High Sierra, entering an incorrect password during the key rotation process can result in invalidation of the existing FileVault key.
-    - Since the existing FileVault key is not valid in the first place (presumably) this isn't the end of the world. But it means that if the key was stored separately, e.g. in a spreadsheet somewhere, it will no longer work.
-    - We attempt to mitigate this by validating the provided password with `dscl` prior to using it for rotation of the FileVault key. However, there is no guarantee that your local account password and your FileVault password are the same.
-- Previous versions of macOS generated log output that confirmed the successful escrow of the newly generated FileVault key. High Sierra and Mojave do not. Instead, a local file containing the new key is written, which MDM is meant to retrieve. We attempt to determine escrow success by detecting a change in that file, but it's not a guarantee of success.
-- If you find additional issues with High Sierra or Mojave, I'd appreciate you [opening an issue](https://github.com/homebysix/jss-filevault-reissue/issues) on this repo.
-
-#### Catalina (10.15)
-
-This script should work on macOS Catalina, but please [open an issue](https://github.com/homebysix/jss-filevault-reissue/issues) if you notice any Catalina-specific bugs.
 
 
 __Thank you!__
