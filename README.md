@@ -2,12 +2,11 @@
 
 _Presented by Elliot Jordan, Senior Consultant, [Linde Group](http://www.lindegroup.com)_<br />_MacBrained - January 27, 2015 - San Francisco, CA_
 
-## Deprecation Notice <!-- omit in toc -->
-
-**[Escrow Buddy](https://github.com/macadmins/escrow-buddy) is a tool for reissuing and escrowing FileVault keys is available which does NOT require prompting users for their passwords.** As such, I don't plan to make any further updates to the workflow below. Please consider switching to Escrow Buddy. Read more below:
-
-- Netflix Tech Blog: [Escrow Buddy: An open-source tool from Netflix for remediation of missing FileVault keys in MDM](https://netflixtechblog.com/escrow-buddy-an-open-source-tool-from-netflix-for-remediation-of-missing-filevault-keys-in-mdm-815aef5107cd)
-- Elliot Jordan: [Escrowing new FileVault keys to MDM without password prompts](https://www.elliotjordan.com/posts/filevault-reissue/)
+> [!WARNING]
+> **DEPRECATION NOTICE**: **[Escrow Buddy](https://github.com/macadmins/escrow-buddy) is a better tool for reissuing and escrowing FileVault keys which does NOT require prompting users for their passwords.** As such, I don't plan to make any further updates to the workflow below. Please strongly consider switching to Escrow Buddy. Read more below:
+>
+> - Netflix Tech Blog: [Escrow Buddy: An open-source tool from Netflix for remediation of missing FileVault keys in MDM](https://netflixtechblog.com/escrow-buddy-an-open-source-tool-from-netflix-for-remediation-of-missing-filevault-keys-in-mdm-815aef5107cd)
+> - Elliot Jordan: [Escrowing new FileVault keys to MDM without password prompts](https://www.elliotjordan.com/posts/filevault-reissue/)
 
 ---
 
@@ -15,7 +14,6 @@ _Presented by Elliot Jordan, Senior Consultant, [Linde Group](http://www.lindegr
 
 <!-- MarkdownTOC autolink=true depth=4 bracket=round -->
 
-- [Table of Contents](#table-of-contents)
 - [The Problem](#the-problem)
 - [The Solution](#the-solution)
     - [Step One: Configuration Profile](#step-one-configuration-profile)
